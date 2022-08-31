@@ -33,6 +33,10 @@ import torch
 from isaacgym import gymutil, gymtorch, gymapi
 from .base.vec_task import VecTask
 
+use_cv2 = False
+if use_cv2:
+  import cv2
+
 class CartpoleCamera(VecTask):
 
     def __init__(self, cfg, rl_device, sim_device, graphics_device_id, headless, virtual_screen_capture, force_render):
@@ -177,6 +181,10 @@ class CartpoleCamera(VecTask):
         if env_ids is None:
             env_ids = np.arange(self.num_envs)
 
+        #if self.device != 'cpu':
+        #  self.gym.fetch_results(self.sim, True)
+        self.gym.step_graphics(self.sim)
+
         self.gym.refresh_dof_state_tensor(self.sim)
 
         if self.use_camera:
@@ -189,9 +197,15 @@ class CartpoleCamera(VecTask):
                 self.obs_buf[:, :, :, (0) * self.camera_channels: (stk-1) * self.camera_channels]
             for id in np.arange(self.num_envs):
                 camera_gpu_tensor = self.camera_tensors[id][:, :, 0:self.camera_channels].clone()
+                #if (id==0):
+                #  print("camera_gpu_tensor=",camera_gpu_tensor.float())
                 #print(camera_gpu_tensor.shape)
                 self.obs_buf[id, :, :, 0:self.camera_channels] = camera_gpu_tensor.float()
-            pass
+                if use_cv2:
+                   if id == 2:
+                     cv2.imshow("image", self.obs_buf[id, :, :, 0:3].cpu().numpy() / 255.)
+                     cv2.waitKey(1000)
+
         else:
           self.obs_buf[env_ids, 0] = self.dof_pos[env_ids, 0].squeeze()
           self.obs_buf[env_ids, 1] = self.dof_vel[env_ids, 0].squeeze()
@@ -212,6 +226,12 @@ class CartpoleCamera(VecTask):
                                               gymtorch.unwrap_tensor(self.dof_state),
                                               gymtorch.unwrap_tensor(env_ids_int32), len(env_ids_int32))
 
+        if self.use_camera: 
+            #self.obs_buf["camera"][env_ids] = 0.
+            #self.camera_obs_buf[env_ids] = 0.0
+            #print(self.obs_dict)
+            self.obs_buf[env_ids, :, :, :] = 0.0
+              
         self.reset_buf[env_ids] = 0
         self.progress_buf[env_ids] = 0
 
