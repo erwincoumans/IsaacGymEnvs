@@ -85,9 +85,9 @@ class Env(ABC):
         # if training in a headless mode
         self.headless = headless
 
-        enable_camera_sensors = config.get("enableCameraSensors", False)
+        self.enable_camera_sensors = config["env"].get("enableCameraSensors", False)
         self.graphics_device_id = graphics_device_id
-        if enable_camera_sensors == False and self.headless == True:
+        if self.enable_camera_sensors == False and self.headless == True:
             self.graphics_device_id = -1
 
         self.num_environments = config["env"]["numEnvs"]
@@ -97,8 +97,12 @@ class Env(ABC):
         self.num_actions = config["env"]["numActions"]
 
         self.control_freq_inv = config["env"].get("controlFrequencyInv", 1)
-
-        self.obs_space = spaces.Box(np.ones(self.num_obs) * -np.Inf, np.ones(self.num_obs) * np.Inf)
+        
+        if self.enable_camera_sensors:
+            self.obs_space = spaces.Box(np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), 6)) * -np.Inf,
+                                    np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), 6)) * np.Inf)
+        else: 
+            self.obs_space = spaces.Box(np.ones(self.num_obs) * -np.Inf, np.ones(self.num_obs) * np.Inf)
         self.state_space = spaces.Box(np.ones(self.num_states) * -np.Inf, np.ones(self.num_states) * np.Inf)
 
         self.act_space = spaces.Box(np.ones(self.num_actions) * -1., np.ones(self.num_actions) * 1.)
@@ -259,8 +263,22 @@ class VecTask(Env):
         """
 
         # allocate buffers
-        self.obs_buf = torch.zeros(
-            (self.num_envs, self.num_obs), device=self.device, dtype=torch.float)
+        print("self.enable_camera_sensors=",self.enable_camera_sensors)
+        if self.enable_camera_sensors:
+            #self.obs_buf = torch.zeros(
+            #    (self.num_envs, self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.camera_channels * self.camera_image_stack), device=self.device, dtype=torch.float)
+            cam_height = self.cfg["env"].get("cameraHeight", 80)
+            cam_width = self.cfg["env"].get("cameraWidth", 120)
+            
+            print("cam_height=",cam_height)
+            print("cam_width=",cam_width)
+            
+            self.obs_buf = torch.zeros(
+                (self.num_envs, cam_height, cam_width, 6), device=self.device, dtype=torch.float)
+
+        else:
+            self.obs_buf = torch.zeros(
+                (self.num_envs, self.num_obs), device=self.device, dtype=torch.float)
         self.states_buf = torch.zeros(
             (self.num_envs, self.num_states), device=self.device, dtype=torch.float)
         self.rew_buf = torch.zeros(
