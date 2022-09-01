@@ -41,7 +41,6 @@ class CartpoleCamera(VecTask):
 
     def __init__(self, cfg, rl_device, sim_device, graphics_device_id, headless, virtual_screen_capture, force_render):
         self.cfg = cfg
-
         self.reset_dist = self.cfg["env"]["resetDist"]
 
         self.max_push_effort = self.cfg["env"]["maxEffort"]

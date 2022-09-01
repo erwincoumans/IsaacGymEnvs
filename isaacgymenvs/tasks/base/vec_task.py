@@ -99,8 +99,8 @@ class Env(ABC):
         self.control_freq_inv = config["env"].get("controlFrequencyInv", 1)
         
         if self.enable_camera_sensors:
-            self.obs_space = spaces.Box(np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), 6)) * -np.Inf,
-                                    np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), 6)) * np.Inf)
+            self.obs_space = spaces.Box(np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.camera_channels*self.camera_image_stack)) * -np.Inf,
+                                    np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.camera_channels*self.camera_image_stack)) * np.Inf)
         else: 
             self.obs_space = spaces.Box(np.ones(self.num_obs) * -np.Inf, np.ones(self.num_obs) * np.Inf)
         self.state_space = spaces.Box(np.ones(self.num_states) * -np.Inf, np.ones(self.num_states) * np.Inf)
@@ -274,7 +274,7 @@ class VecTask(Env):
             print("cam_width=",cam_width)
             
             self.obs_buf = torch.zeros(
-                (self.num_envs, cam_height, cam_width, 6), device=self.device, dtype=torch.float)
+                (self.num_envs, cam_height, cam_width, self.camera_channels*self.camera_image_stack), device=self.device, dtype=torch.float)
 
         else:
             self.obs_buf = torch.zeros(
