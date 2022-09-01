@@ -93,14 +93,17 @@ class Env(ABC):
         self.num_environments = config["env"]["numEnvs"]
         self.num_agents = config["env"].get("numAgents", 1)  # used for multi-agent environments
         self.num_observations = config["env"]["numObservations"]
+        print("self.num_observations=",self.num_observations)
+        
         self.num_states = config["env"].get("numStates", 0)
         self.num_actions = config["env"]["numActions"]
 
         self.control_freq_inv = config["env"].get("controlFrequencyInv", 1)
-        
+
+        self.num_stacked_channels = self.camera_channels + self.camera_image_stack*self.camera_channels
         if self.enable_camera_sensors:
-            self.obs_space = spaces.Box(np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.camera_channels*self.camera_image_stack)) * -np.Inf,
-                                    np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.camera_channels*self.camera_image_stack)) * np.Inf)
+            self.obs_space = spaces.Box(np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.num_stacked_channels)) * -np.Inf,
+                                    np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.num_stacked_channels)) * np.Inf)
         else: 
             self.obs_space = spaces.Box(np.ones(self.num_obs) * -np.Inf, np.ones(self.num_obs) * np.Inf)
         self.state_space = spaces.Box(np.ones(self.num_states) * -np.Inf, np.ones(self.num_states) * np.Inf)
@@ -272,9 +275,10 @@ class VecTask(Env):
             
             print("cam_height=",cam_height)
             print("cam_width=",cam_width)
-            
+
             self.obs_buf = torch.zeros(
-                (self.num_envs, cam_height, cam_width, self.camera_channels*self.camera_image_stack), device=self.device, dtype=torch.float)
+                (self.num_envs, cam_height, cam_width, self.num_stacked_channels), device=self.device, dtype=torch.float)
+            print("self.obs_buf.shape=",self.obs_buf.shape)
 
         else:
             self.obs_buf = torch.zeros(
