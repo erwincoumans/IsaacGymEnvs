@@ -100,8 +100,8 @@ class Env(ABC):
 
         self.control_freq_inv = config["env"].get("controlFrequencyInv", 1)
 
-        self.num_stacked_channels = self.camera_channels + self.camera_image_stack*self.camera_channels
         if self.enable_camera_sensors:
+            self.num_stacked_channels = self.camera_channels + self.camera_image_stack*self.camera_channels
             self.obs_space = spaces.Box(np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.num_stacked_channels)) * -np.Inf,
                                     np.ones((self.cfg["env"].get("cameraHeight", 80), self.cfg["env"].get("cameraWidth", 120), self.num_stacked_channels)) * np.Inf)
         else: 
