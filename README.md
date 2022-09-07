@@ -2,6 +2,18 @@
 
 [Website](https://developer.nvidia.com/isaac-gym) | [Technical Paper](https://arxiv.org/abs/2108.10470) | [Videos](https://sites.google.com/view/isaacgym-nvidia)
 
+### Cartpole Camera
+
+This cartpole_camera branch adds two tasks: CartpoleCamera and CartpoleTiledCamera. 
+
+#### CartpoleCamera
+
+[CartpoleCamera](https://github.com/erwincoumans/IsaacGymEnvs/blob/cartpole_camera/isaacgymenvs/tasks/cartpole_camera.py) trains the Cartpole tasks using images as input, instead of joint positions/angles. Training takes about 3 minutes on a modern PC with high-end GPU (say NVIDIA GTX 3080 or 3090). Rendering 256 images takes about 100ms.
+
+#### CartpoleTiledCamera
+
+The [CartpoleTiledCamera](https://github.com/erwincoumans/IsaacGymEnvs/blob/cartpole_camera/isaacgymenvs/tasks/cartpole_tiled_camera.py) task improves the performance of many cameras, by using viewports to render images, using instances to reduce OpenGL state changes and passing the tiled images to PyTorch using CUDA interop. Here is a [notebook](https://colab.research.google.com/drive/1wuIIxxOYc3wTQPe_Sx-7a-0Vl37TIVHq?usp=sharing) that shows how to use the pytinyopengl3 module, part of [pytinydiffsim](https://github.com/erwincoumans/tiny-differentiable-simulator). This results in rendering of 256 images in about 2ms. Training the CartpoleTiledCamera task takes about 40 seconds on a high-end PC/GPU (3090).
+
 
 ### About this repository
 
